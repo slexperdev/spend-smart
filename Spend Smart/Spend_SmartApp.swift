@@ -11,7 +11,9 @@ import SwiftUI
 struct Spend_SmartApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationView{
+                ContentView()
+            }
         }
     }
 }
