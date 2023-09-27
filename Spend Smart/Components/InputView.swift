@@ -17,6 +17,7 @@ struct InputView: View {
                 .stroke(Color(.black), lineWidth: 2)
                 .foregroundColor(.white)
                 .frame(height: 54)
+                .autocorrectionDisabled()
                 .overlay {
                     if isSecured {
                         SecureField(placeholder, text: $text)

@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var userVm: UserViewModel
     @State private var showSplash = true
+    
     var body: some View {
         ZStack {
             if showSplash {
@@ -16,7 +18,11 @@ struct ContentView: View {
                     .transition(.opacity)
                     .animation(.easeOut(duration: 1.5))
             } else {
-                StartUpView()
+                if let isAuthenticated = UserDefaults.standard.value(forKey: "autheticated") as? Bool, isAuthenticated {
+                    DashboardView()
+                } else {
+                    StartUpView()
+                }
             }
         }
         .onAppear{
@@ -34,5 +40,6 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .environmentObject(UserViewModel())
     }
 }

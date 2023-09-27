@@ -8,9 +8,12 @@
 import SwiftUI
 
 struct LoginView: View {
-    @StateObject var loginVm : LoginViewModel = LoginViewModel()
+    @EnvironmentObject var userVm: UserViewModel
     @Environment(\.presentationMode) var present
     
+    @State private var email: String = ""
+    @State private var password: String = ""
+        
     var body: some View {
         ZStack{
             Color.white.ignoresSafeArea()
@@ -26,39 +29,50 @@ struct LoginView: View {
                 
                 Image("applogo")
                 Text("SpendSmart").font(.system(size: 36)).bold()
+               
                 Text("Your personal money manager").font(.system(size: 18))
                 VStack(spacing: 30){
-                    InputView(text: $loginVm.email, placeholder: "Email address")
-                    InputView(text: $loginVm.password, placeholder: "Password", isSecured: true)
+                    InputView(text: $email, placeholder: "Email address")
+                    InputView(text: $password, placeholder: "Password", isSecured: true)
                     Button {
-                       
+                        Task{
+                            try await userVm.signIn(withEmail:email, password:password)
+                        }
                     } label: {
                         ZStack {
                             LinearGradient(colors: [Color("GradientStart1"), Color("GradientEnd1")], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea(edges : .top).clipShape(RoundedRectangle(cornerRadius: 33))
                                 .frame(height: 54)
                             HStack{
                                 Spacer()
-                                Text("Login")
-                                    .foregroundColor(.white)
-                                    .bold()
+                                if userVm.isAuthenticating {
+                                    ProgressView()
+                                        .foregroundColor(.white)
+                                } else {
+                                    Text("Login")
+                                        .foregroundColor(.white)
+                                        .bold()
+                                }
                                 Spacer()
                                 Image("arrow")
                             }.padding(.horizontal, 20)
                         }
-                        
                     }
                 }.padding(.vertical, 80)
             }
-           
+            NavigationLink(isActive: $userVm.isAuthenticated){
+                DashboardView()
+                    .navigationBarBackButtonHidden()
+            } label: {
+
+            }
         }.padding()
         Spacer()
     }
-    
-   
 }
 
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
         LoginView()
+            .environmentObject(UserViewModel())
     }
 }

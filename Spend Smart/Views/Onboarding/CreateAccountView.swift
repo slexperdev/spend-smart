@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct CreateAccountView: View {
-    @StateObject var signUpVm : SignUpViewModel = SignUpViewModel()
+    @EnvironmentObject var userVm: UserViewModel
+    
     @Environment(\.presentationMode) var present
+    
     
     var body: some View {
         ZStack{
@@ -24,16 +26,16 @@ struct CreateAccountView: View {
                     
                 Spacer()
                 
-              
                 Text("Create Account").font(.system(size: 36)).bold()
                 Text("Elevate Your Financial Game with SpendSmart.").font(.system(size: 14)).foregroundColor(Color("gray"))
                 VStack(spacing: 30){
-                    InputView(text: $signUpVm.name, placeholder: "Display name")
-                    InputView(text: $signUpVm.email, placeholder: "Email address")
-                    InputView(text: $signUpVm.password, placeholder: "Password", isSecured: true)
-                    InputView(text: $signUpVm.confirmPassword, placeholder: "Confirm password", isSecured: true)
-                    Button {
-                        signUpVm.navigateToSetCurrency = true
+                    InputView(text: $userVm.fullName, placeholder: "Display name")
+                    InputView(text: $userVm.email, placeholder: "Email address")
+                    InputView(text: $userVm.password, placeholder: "Password", isSecured: true)
+                    InputView(text: $userVm.confirmPassword, placeholder: "Confirm password", isSecured: true)
+                    NavigationLink {
+                        SetCurrencyView()
+                            .navigationBarBackButtonHidden()
                     } label: {
                         ZStack {
                             LinearGradient(colors: [Color("GradientStart1"), Color("GradientEnd1")], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea(edges : .top).clipShape(RoundedRectangle(cornerRadius: 33))
@@ -55,12 +57,12 @@ struct CreateAccountView: View {
            
         }.padding()
         Spacer()
-        NavigationLink("", destination: SetCurrencyView(), isActive: $signUpVm.navigateToSetCurrency)
     }
 }
 
 struct CreateAccountView_Previews: PreviewProvider {
     static var previews: some View {
         CreateAccountView()
+            .environmentObject(UserViewModel())
     }
 }
