@@ -31,13 +31,14 @@ class CategoryViewModel : ObservableObject {
     }
 
     
-    func createCategory() async {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+    //Create new category
+    func createCategory()  {
         self.isLoading = true
+        guard let uid = Auth.auth().currentUser?.uid else { return }
         let db = Firestore.firestore()
         let doc = db.collection("users").document(uid).collection("categories")
         
-         doc.addDocument(data: ["category": category, "color":color]) { error in
+        doc.addDocument(data: ["category": category, "color":color]) { error in
             if let error = error {
                 self.showAlert = true
                 self.message = "Error creating category: \(error)"
@@ -47,28 +48,53 @@ class CategoryViewModel : ObservableObject {
                 self.clearState()
             }
         }
-        await fetchCategories()
+        fetchCategories()
         self.isLoading = false
+        
     }
     
-    func fetchCategories() async{
-        self.isLoading = true
+    //Featch all categories
+    func fetchCategories() {
+        DispatchQueue.main.async {
+         
+            self.isLoading = true
+        }
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        guard let querySnapshot = try? await Firestore.firestore().collection("users").document(uid).collection("categories").getDocuments() else { return }
-        categories.removeAll()
-        for document in querySnapshot.documents {
-            if let categoryData = document.data() as? [String: Any],
-               let category = categoryData["category"] as? String,
-               let color = categoryData["color"] as? String {
-                   let id = document.documentID
-                   let newCategory = Category(id: id, category: category, color: color)
-                   categories.append(newCategory)
+        
+        let db = Firestore.firestore()
+        db.collection("users").document(uid).collection("categories").getDocuments { querySnapshot, error in
+            if let error = error {
+                print("Error fetching categories: \(error)")
+                return
+            }
+            
+            guard let documents = querySnapshot?.documents else {
+                return
+            }
+            
+            var fetchedCategories: [Category] = []
+            
+            for document in documents {
+                let id = document.documentID
+                if let categoryData = document.data() as? [String: Any],
+                   let category = categoryData["category"] as? String,
+                   let color = categoryData["color"] as? String {
+                    let newCategory = Category(id: id, category: category, color: color)
+                    fetchedCategories.append(newCategory)
+                } else {
+                    print("Failed to parse data for category with ID: \(id)")
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.categories = fetchedCategories
+                self.isLoading = false
             }
         }
-        self.categories = categories
-        self.isLoading = false
     }
+
     
+    //Cleare state
     func clearState(){
         self.color = ""
         self.category = ""

@@ -16,6 +16,9 @@ struct CategoriesView: View {
     
     var body: some View {
         ZStack{
+            if categoryVm.isLoading {
+                LoadingView()
+            }
             VStack{
                 HStack{
                     Text("Categories")
@@ -35,40 +38,33 @@ struct CategoriesView: View {
                     }
                     .sheet(isPresented: $isShowBottomSheet){
                         bottomCardView
-                            .presentationDetents([.fraction(0.5)])
+                            .presentationDetents([.fraction(0.6)])
                             .presentationDragIndicator(.visible)
                     }
                 }
                 ScrollView(.vertical, showsIndicators: false){
-                    VStack{
+                    LazyVStack{
                         ForEach(categoryVm.categories, id: \.id) {
                             category in
                             ZStack(alignment:.leading){
                                 RoundedRectangle(cornerRadius: 19)
                                     .foregroundColor(Color(hex: category.color))
                                     .frame(height: 80)
-                                VStack(alignment:.leading, spacing: 20){
-                                    HStack{
-                                        Image(systemName: "folder.circle")
-                                            .foregroundColor(.white)
-                                        Text(category.category).font(.system(size: 22))
-                                            .foregroundColor(.white)
-                                            .bold()
-                                    }
-                                    
+                                HStack{
+                                    Image(systemName: "folder.circle")
+                                        .foregroundColor(.white)
+                                    Text(category.category).font(.system(size: 22))
+                                        .foregroundColor(.white)
+                                        .bold()
                                 }.padding(.horizontal, 20)
                             }
-                            
                         }
                     }
                 }
             }.padding()
-            if categoryVm.isLoading {
-                LoadingView()
-            }
         }.onAppear(perform:{
             Task{
-               await categoryVm.fetchCategories()
+                await categoryVm.fetchCategories()
             }
         })
     }
@@ -120,9 +116,9 @@ struct CategoriesView: View {
             }
             Spacer()
             Button{
-                Task {
-                    try await categoryVm.createCategory()
-                }
+                
+                categoryVm.createCategory()
+                
             } label: {
                 ZStack {
                     LinearGradient(colors: [Color("GradientStart"), Color("GradientEnd")], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea(edges : .top).clipShape(RoundedRectangle(cornerRadius: 33))

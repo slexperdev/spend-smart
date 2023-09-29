@@ -88,6 +88,8 @@ struct SetCurrencyView: View {
                         }.padding(.horizontal, 20)
                     }
                     
+                }.alert(isPresented: $userVm.showAlert) {
+                    Alert(title: Text("Auth Error"), message: Text(userVm.message), dismissButton: .default(Text("OK")))
                 }
             }
             NavigationLink(isActive: $userVm.isAuthenticated){

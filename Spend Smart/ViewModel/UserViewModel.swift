@@ -19,6 +19,7 @@ class UserViewModel: ObservableObject {
     @Published var currentUser: User?
     @Published var isAuthenticated: Bool = false
     @Published var isAuthenticating: Bool = false
+    @Published var isLoading: Bool = false
     @Published var showAlert: Bool = false
     @Published var message: String = ""
     
@@ -81,10 +82,12 @@ class UserViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.isAuthenticated = true
             }
-            UserDefaults.standard.set(self.isAuthenticated, forKey: "authenticated")
+            UserDefaults.standard.set(true, forKey: "authenticated")
             
         } catch {
             print("Failed to create new user with error \(error.localizedDescription)")
+            self.showAlert = true
+            self.message = "Failed with \(error.localizedDescription)"
         }
         DispatchQueue.main.async {
             self.isAuthenticating = false
@@ -97,21 +100,51 @@ class UserViewModel: ObservableObject {
             try Auth.auth().signOut()
             self.userSession = nil
             self.isAuthenticated = false
+            self.currentUser = nil
             UserDefaults.standard.removeObject(forKey: "authenticated")
         } catch {
             print("Failed to create fetch user with error \(error.localizedDescription)")
         }
+       
     }
     
     //user delete
     func deleteAccount(){
+        if let user = Auth.auth().currentUser {
+            let uid = user.uid
+            
+            let userRef = Firestore.firestore().collection("users").document(uid)
+            
+            userRef.delete { error in
+                if let error = error {
+                    print("Error deleting user document in Firestore: \(error.localizedDescription)")
+                } else {
+                    user.delete { error in
+                        if let error = error {
+                            print("Error deleting user account: \(error.localizedDescription)")
+                        } else {
+                            print("User account deleted successfully")
+                            self.signOut()
+                        }
+                    }
+                    
+                }
+            }
+        }
     }
     
     //get user
     func fetchUser() async {
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
         guard let uid = Auth.auth().currentUser?.uid else { return }
         guard let snaphot  = try? await Firestore.firestore().collection("users").document(uid).getDocument() else { return }
-        self.currentUser = try? snaphot.data(as: User.self)
+        
+        DispatchQueue.main.async {
+            self.currentUser = try? snaphot.data(as: User.self)
+            self.isLoading = false
+        }
         
     }
     

@@ -31,7 +31,22 @@ struct CreateAccountView: View {
                 VStack(spacing: 30){
                     InputView(text: $userVm.fullName, placeholder: "Display name")
                     InputView(text: $userVm.email, placeholder: "Email address")
-                    InputView(text: $userVm.password, placeholder: "Password", isSecured: true)
+                    ZStack(alignment: .trailing){
+                        InputView(text: $userVm.password, placeholder: "Password", isSecured: true)
+                        if !userVm.password.isEmpty{
+                            if userVm.password.count > 5 {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .imageScale(.large)
+                                    .foregroundColor(.green)
+                                    .padding(.trailing)
+                            } else {
+                                Image(systemName: "xmark.circle.fill")
+                                    .imageScale(.large)
+                                    .foregroundColor(.red)
+                                    .padding(.trailing)
+                            }
+                        }
+                    }
                     ZStack (alignment: .trailing){
                         InputView(text: $userVm.confirmPassword, placeholder: "Confirm password", isSecured: true)
                         
@@ -39,7 +54,13 @@ struct CreateAccountView: View {
                             if userVm.password == userVm.confirmPassword {
                                 Image(systemName: "checkmark.circle.fill")
                                     .imageScale(.large)
-                                    
+                                    .foregroundColor(.green)
+                                    .padding(.trailing)
+                            } else {
+                                Image(systemName: "xmark.circle.fill")
+                                    .imageScale(.large)
+                                    .foregroundColor(.red)
+                                    .padding(.trailing)
                             }
                         }
                     }

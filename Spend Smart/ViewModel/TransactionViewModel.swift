@@ -31,9 +31,12 @@ class TransactionViewModel : ObservableObject {
         getTotalExpenseAndIncome()
     }
     
+    //Create new Transaction (Expense and Income)
     func createTransaction(type: String) async {
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        self.isLoading = true
         let db = Firestore.firestore()
         let doc = db.collection("users").document(uid).collection("transactions")
         
@@ -41,7 +44,7 @@ class TransactionViewModel : ObservableObject {
             let timestamp = Timestamp(date:createdOn)
         
             doc.addDocument(data: ["title":title, "remark": remark, "categoryId":selectedCategory, "amount": amountValue, "createdOn":timestamp, "type": type  ]) { error in
-                if let error = error {
+                if error != nil {
                     self.showAlert = true
                     self.message = "Error creating expense"
                 } else {
@@ -56,14 +59,16 @@ class TransactionViewModel : ObservableObject {
             print("Invalid amount formate")
         }
             
-        self.isLoading = false
+        DispatchQueue.main.async {
+            self.isLoading = false
+            
+        }
+        
     }
     
+    //Fetch all Transaction (Expense and Income)
     func fetchTransactions() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            print("User is not authenticated or UID is nil.")
-            return
-        }
+        guard let uid = Auth.auth().currentUser?.uid else { return }
         
         let db = Firestore.firestore()
         db.collection("users").document(uid).collection("transactions").getDocuments { querySnapshot, error in
@@ -73,7 +78,6 @@ class TransactionViewModel : ObservableObject {
             }
             
             guard let documents = querySnapshot?.documents else {
-                print("No documents found.")
                 return
             }
             
@@ -102,14 +106,17 @@ class TransactionViewModel : ObservableObject {
         }
     }
     
-    
+    //Get total Transaction (Expense and Income)
     func getTotalExpenseAndIncome() {
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let db = Firestore.firestore()
         let transactionsCollection = db.collection("users").document(uid).collection("transactions")
 
         transactionsCollection
-            .whereField("type", isEqualTo: "Expense") // Filter by type "expense"
+            .whereField("type", isEqualTo: "Expense") // Filter by type "Expense"
             .getDocuments { (querySnapshot, error) in
                 if let error = error {
                     print("Error fetching expenses: \(error)")
@@ -122,30 +129,36 @@ class TransactionViewModel : ObservableObject {
                         }
                     }
 
-                    self.totalExpense = totalExpense
+                    DispatchQueue.main.async {
+                        self.totalExpense = totalExpense
+                    }
                 }
             }
         
         transactionsCollection
-            .whereField("type", isEqualTo: "Income") // Filter by type "income"
+            .whereField("type", isEqualTo: "Income") // Filter by type "Income"
             .getDocuments { (querySnapshot, error) in
                 if let error = error {
                     print("Error fetching income: \(error)")
                 } else if let querySnapshot = querySnapshot {
                     var totalIncome: Double = 0.0
-
+                    
                     for document in querySnapshot.documents {
                         if let amount = document.data()["amount"] as? Double {
                             totalIncome += amount
                         }
                     }
-
-                    self.totalIncome = totalIncome
+                    DispatchQueue.main.async {
+                        self.totalIncome = totalIncome
+                    }
                 }
             }
+        DispatchQueue.main.async {
+            self.isLoading = false
+        }
     }
     
-    
+    //Clear state
     func clearState(){
         self.title = ""
         self.remark = ""

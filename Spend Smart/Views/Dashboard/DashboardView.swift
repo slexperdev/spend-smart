@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct DashboardView: View {
+    
     var body: some View {
         TabView{
             HomeView()
@@ -23,7 +24,7 @@ struct DashboardView: View {
             ReportView()
                 .tabItem{
                     Image(systemName: "chart.pie.fill")
-                    Text("Reports")
+                    Text("Summery")
                 }
             SettingsView()
                 .tabItem{
@@ -36,10 +37,8 @@ struct DashboardView: View {
     }
 }
 
-#if DEBUG
 struct DashboardView_Previews: PreviewProvider {
     static var previews: some View {
         DashboardView()
     }
 }
-#endif

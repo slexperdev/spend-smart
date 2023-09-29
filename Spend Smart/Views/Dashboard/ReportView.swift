@@ -15,32 +15,35 @@ struct ReportView: View {
     @State private var tabIndex:Int = 0
     
     var filteredTransactions: [Transaction] {
-           let currentDate = Date()
-           switch tabIndex {
-           case 1:
-               return transactionVm.transactions.filter {
-                   Calendar.current.isDate($0.createdOn, inSameDayAs: currentDate)
-               }
-           case 2:
-               let startOfWeek = Calendar.current.date(from: Calendar.current.dateComponents([.yearForWeekOfYear, .weekOfYear], from: currentDate))!
-               let endOfWeek = Calendar.current.date(byAdding: .weekOfYear, value: 1, to: startOfWeek)!
-               return transactionVm.transactions.filter {
-                   $0.createdOn >= startOfWeek && $0.createdOn < endOfWeek
-               }
-           case 3:
-               let startOfMonth = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: currentDate))!
-               let endOfMonth = Calendar.current.date(byAdding: .month, value: 1, to: startOfMonth)!
-               return transactionVm.transactions.filter {
-                   $0.createdOn >= startOfMonth && $0.createdOn < endOfMonth
-               }
-           default:
-               return []
-           }
-       }
-
+        let currentDate = Date()
+        switch tabIndex {
+        case 1:
+            return transactionVm.transactions.filter {
+                Calendar.current.isDate($0.createdOn, inSameDayAs: currentDate)
+            }
+        case 2:
+            let startOfWeek = Calendar.current.date(from: Calendar.current.dateComponents([.yearForWeekOfYear, .weekOfYear], from: currentDate))!
+            let endOfWeek = Calendar.current.date(byAdding: .weekOfYear, value: 1, to: startOfWeek)!
+            return transactionVm.transactions.filter {
+                $0.createdOn >= startOfWeek && $0.createdOn < endOfWeek
+            }
+        case 3:
+            let startOfMonth = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: currentDate))!
+            let endOfMonth = Calendar.current.date(byAdding: .month, value: 1, to: startOfMonth)!
+            return transactionVm.transactions.filter {
+                $0.createdOn >= startOfMonth && $0.createdOn < endOfMonth
+            }
+        default:
+            return []
+        }
+    }
+    
     
     var body: some View {
         ZStack{
+            if reportVm.isLoading {
+                LoadingView()
+            }
             VStack{
                 HStack{
                     ScrollView(.horizontal, showsIndicators: false){
@@ -121,7 +124,7 @@ struct ReportView: View {
                                                 .bold()
                                                 .font(.system(size: 16))
                                                 .foregroundColor(.white)
-                                                
+                                            
                                             Spacer()
                                             Text("Total Expense")
                                                 .bold()
@@ -132,14 +135,14 @@ struct ReportView: View {
                                             Image(systemName: "arrow.down")
                                                 .foregroundColor(.white)
                                                 .font(.system(size: 16))
-                                            Text("\(category.totalIncome.formattedPrice()) \(userVm.currentUser!.currency)")
+                                            Text("\(category.totalIncome.formattedPrice()) \(userVm.currentUser?.currency ?? "")")
                                                 .font(.system(size: 16))
                                                 .foregroundColor(.white)
                                             Spacer()
                                             Image(systemName: "arrow.up")
                                                 .foregroundColor(.white)
                                                 .font(.system(size: 16))
-                                            Text("\(category.totalExpense.formattedPrice()) \(userVm.currentUser!.currency)")
+                                            Text("\(category.totalExpense.formattedPrice()) \(userVm.currentUser?.currency ?? "")")
                                                 .font(.system(size: 16))
                                                 .foregroundColor(.white)
                                         }
@@ -151,41 +154,37 @@ struct ReportView: View {
                         } else {
                             ForEach(filteredTransactions, id:\.id){
                                 transaction in
-                                VStack(spacing:15){
-                                    HStack{
-                                        //                                Image(systemName: "pencil")
-                                        Text(transaction.title)
-                                            .bold()
-                                        Spacer()
-                                        Text(transaction.createdOn.formatDate())
-                                            .font(.system(size: 14))
-                                        
-                                    }
-                                    HStack{
-                                        Text(transaction.remark)
-                                        Spacer()
-                                    }
-                                    HStack{
-                                        Image(systemName: transaction.type == "Expense" ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
-                                            .font(.system(size: 22))
-                                            .foregroundColor(Color(transaction.type=="Expense" ? "GradientStart2" : "GradientStart"))
-                                        Text(transaction.amount.formattedPrice())
-                                            .foregroundColor(Color(transaction.type=="Expense" ? "GradientStart2" : "GradientStart"))
-                                            .font(.system(size: 22))
-                                            .bold()
-                                        Text(userVm.currentUser!.currency)
-                                            .foregroundColor(Color(transaction.type=="Expense" ? "GradientStart2" : "GradientStart"))
-                                            .font(.system(size: 22))
-                                        Spacer()
-                                    }
-                                }
-                                .padding()
-                                .background(
+                                ZStack{
                                     RoundedRectangle(cornerRadius: 20)
                                         .foregroundColor(Color("gray1"))
-                                )
+                                    VStack(alignment:.leading, spacing:15){
+                                        HStack{
+                                            Text(transaction.title)
+                                                .bold()
+                                            Spacer()
+                                            Text(transaction.createdOn.formatDate())
+                                                .font(.system(size: 14))
+                                        }
+                                        Text(transaction.remark)
+                                        
+                                        HStack{
+                                            Image(systemName: transaction.type == "Expense" ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
+                                                .font(.system(size: 22))
+                                                .foregroundColor(Color(transaction.type=="Expense" ? "GradientStart2" : "GradientStart"))
+                                            Text(transaction.amount.formattedPrice())
+                                                .foregroundColor(Color(transaction.type=="Expense" ? "GradientStart2" : "GradientStart"))
+                                                .font(.system(size: 22))
+                                                .bold()
+                                            Text(userVm.currentUser?.currency ?? "")
+                                                .foregroundColor(Color(transaction.type=="Expense" ? "GradientStart2" : "GradientStart"))
+                                                .font(.system(size: 22))
+                                            
+                                        }
+                                        
+                                    }.padding()
+                                }
                             }
-
+                            
                         }
                     }
                 }.padding(.top)
@@ -194,11 +193,6 @@ struct ReportView: View {
             }
             .padding(.top)
             .padding(.horizontal)
-            
-            if reportVm.isLoading{
-                LoadingView()
-            }
-
         }.onAppear(perform: {
             Task{
                 await reportVm.fetchReports()
