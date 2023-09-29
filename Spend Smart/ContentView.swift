@@ -18,7 +18,7 @@ struct ContentView: View {
                     .transition(.opacity)
                     .animation(.easeOut(duration: 1.5))
             } else {
-                if let isAuthenticated = UserDefaults.standard.value(forKey: "autheticated") as? Bool, isAuthenticated {
+                if let isAuthenticated = UserDefaults.standard.value(forKey: "authenticated") as? Bool, isAuthenticated {
                     DashboardView()
                 } else {
                     StartUpView()

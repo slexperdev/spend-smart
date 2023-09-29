@@ -9,87 +9,72 @@ import SwiftUI
 
 struct CategoriesView: View {
     @EnvironmentObject var userVm: UserViewModel
-    @StateObject var categoryVm: CategoryViewMode = CategoryViewMode()
+    @StateObject var categoryVm: CategoryViewModel = CategoryViewModel()
+    
     
     @State private var isShowBottomSheet: Bool = false
-    @State private var category: String = ""
-    @State private var color: String = ""
-    
-    let colors = ["02B287", "D41F3A", "6E50FF", "35277F", "F39F2F", "26617F"]
     
     var body: some View {
-        VStack{
-            HStack{
-                Text("Categories")
-                    .font(.system(size: 25))
-                    .bold()
-                Spacer(minLength: 0)
-                Button{
-                    isShowBottomSheet.toggle()
-                } label: {
-                    ZStack{
-                        LinearGradient(colors: [Color("GradientStart"), Color("GradientEnd")], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea(edges : .top)
-                            .clipShape(Circle())
-                            .frame(width: 48,height: 48)
-                        Image(systemName: "plus")
-                            .foregroundColor(Color(.white))
-                    }
-                }
-                .sheet(isPresented: $isShowBottomSheet){
-                    bottomCardView
-                        .presentationDetents([.medium, .medium])
-                        .presentationDragIndicator(.visible)
-                }
-            }
-            ScrollView{
-                VStack{
-                    ForEach(categoryVm.categories, id: \.id) {
-                        category in
-                        ZStack(alignment:.leading){
-                            RoundedRectangle(cornerRadius: 19)
-                                .foregroundColor(Color(hex: category.color))
-                                .frame(height: 150)
-                            VStack(alignment:.leading, spacing: 20){
-                                HStack{
-                                    Image(systemName: "bag")
-                                        .foregroundColor(.white)
-                                    Text(category.category).font(.system(size: 22))
-                                        .foregroundColor(.white)
-                                        .bold()
-                                }
-                                HStack{
-                                    Text("Total Income")
-                                        .font(.system(size: 18))
-                                            .foregroundColor(.white)
-                                    Spacer()
-                                    Text("Total Expense")
-                                        .font(.system(size: 18))
-                                            .foregroundColor(.white)
-                                }
-                                HStack{
-                                    Text("0.00 LKR")
-                                        .font(.system(size: 16))
-                                            .foregroundColor(.white)
-                                    Spacer()
-                                    Text("0.00 LKR")
-                                        .font(.system(size: 16))
-                                            .foregroundColor(.white)
-                                }
-            
-                            }.padding(.horizontal, 20)
+        ZStack{
+            VStack{
+                HStack{
+                    Text("Categories")
+                        .font(.system(size: 25))
+                        .bold()
+                    Spacer(minLength: 0)
+                    Button{
+                        isShowBottomSheet.toggle()
+                    } label: {
+                        ZStack{
+                            LinearGradient(colors: [Color("GradientStart"), Color("GradientEnd")], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea(edges : .top)
+                                .clipShape(Circle())
+                                .frame(width: 48,height: 48)
+                            Image(systemName: "plus")
+                                .foregroundColor(Color(.white))
                         }
-
+                    }
+                    .sheet(isPresented: $isShowBottomSheet){
+                        bottomCardView
+                            .presentationDetents([.fraction(0.5)])
+                            .presentationDragIndicator(.visible)
                     }
                 }
+                ScrollView(.vertical, showsIndicators: false){
+                    VStack{
+                        ForEach(categoryVm.categories, id: \.id) {
+                            category in
+                            ZStack(alignment:.leading){
+                                RoundedRectangle(cornerRadius: 19)
+                                    .foregroundColor(Color(hex: category.color))
+                                    .frame(height: 80)
+                                VStack(alignment:.leading, spacing: 20){
+                                    HStack{
+                                        Image(systemName: "folder.circle")
+                                            .foregroundColor(.white)
+                                        Text(category.category).font(.system(size: 22))
+                                            .foregroundColor(.white)
+                                            .bold()
+                                    }
+                                    
+                                }.padding(.horizontal, 20)
+                            }
+                            
+                        }
+                    }
+                }
+            }.padding()
+            if categoryVm.isLoading {
+                LoadingView()
             }
-            
-            Spacer(minLength: 0)
-        }
-        .padding()
-        
+        }.onAppear(perform:{
+            Task{
+               await categoryVm.fetchCategories()
+            }
+        })
     }
+    //bottom sheet
     var bottomCardView:  some View {
-        VStack{
+        VStack(spacing:30){
             HStack{
                 Text("Create new category")
                     .bold()
@@ -97,39 +82,46 @@ struct CategoriesView: View {
                 Spacer()
             }.padding(.top, 10)
             HStack{
-                Text("Choose color :")
-                    .font(.system(size: 18))
+                Image(systemName: "pencil")
+                    .foregroundColor(Color("gray"))
+                    .font(.system(size: 20))
+                TextField("Name", text: $categoryVm.category)
+                    .font(.system(size: 20))
+                    .padding(.horizontal, 5)
+                    .overlay(Rectangle().frame(height: 1).padding(.top, 35).foregroundColor(Color("gray0")))
                 Spacer()
-            }.padding(.top)
-            ScrollView(.horizontal){
+            }
+            HStack{
+                Image(systemName: "checkmark")
+                    .foregroundColor(Color("gray"))
+                Text("Choose color")
+                    .foregroundColor(Color("gray"))
+                    .font(.system(size: 20))
+                Spacer()
+            }
+            ScrollView(.horizontal, showsIndicators: false){
                 HStack{
-                    ForEach(colors, id: \.self){
+                    ForEach(categoryVm.colors, id: \.self){
                         colorCode in
-                        Circle()
-                            .frame(height: 40)
-                            .foregroundColor(Color(hex: colorCode))
-                            .onTapGesture {
-                                color = colorCode
+                        ZStack{
+                            Circle()
+                                .frame(height: 40)
+                                .foregroundColor(Color(hex: colorCode))
+                                .onTapGesture {
+                                    categoryVm.color = colorCode
+                                }
+                            if categoryVm.color == colorCode {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(Color("gray0"))
                             }
+                        }
                     }
                 }
-            }.padding(.top)
-            HStack{
-                Text("Category name :")
-                    .font(.system(size: 18))
-                Spacer()
-            }.padding(.top)
-            HStack{
-                TextField("Eg: foods & drinks, Bills & fees", text:$category)
-                    .padding(.horizontal, 5)
-                        .overlay(Rectangle().frame(height: 1).padding(.top, 35).foregroundColor(.gray))
-                Spacer()
-            }.padding(.top)
-            
+            }
             Spacer()
             Button{
                 Task {
-                    try await categoryVm.createCategory(category: category, color: color)
+                    try await categoryVm.createCategory()
                 }
             } label: {
                 ZStack {
@@ -142,12 +134,26 @@ struct CategoriesView: View {
                             .foregroundColor(.white)
                     }
                 }
-            }.padding(.top)
+            }
+            .padding(.top)
+            .disabled(!formIsValid)
+            .opacity(formIsValid ? 1.0 : 0.5)
+            .alert(isPresented: $categoryVm.showAlert) {
+                Alert(title: Text("Category"), message: Text(categoryVm.message), dismissButton: .default(Text("OK")))
+            }
+            
             
         }.padding()
     }
 }
 
+//form validation
+extension CategoriesView: CategoryFormProtocol {
+    var formIsValid: Bool {
+        return !categoryVm.color.isEmpty
+        && !categoryVm.category.isEmpty
+    }
+}
 
 
 

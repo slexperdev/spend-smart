@@ -32,7 +32,17 @@ struct CreateAccountView: View {
                     InputView(text: $userVm.fullName, placeholder: "Display name")
                     InputView(text: $userVm.email, placeholder: "Email address")
                     InputView(text: $userVm.password, placeholder: "Password", isSecured: true)
-                    InputView(text: $userVm.confirmPassword, placeholder: "Confirm password", isSecured: true)
+                    ZStack (alignment: .trailing){
+                        InputView(text: $userVm.confirmPassword, placeholder: "Confirm password", isSecured: true)
+                        
+                        if !userVm.password.isEmpty && !userVm.confirmPassword.isEmpty {
+                            if userVm.password == userVm.confirmPassword {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .imageScale(.large)
+                                    
+                            }
+                        }
+                    }
                     NavigationLink {
                         SetCurrencyView()
                             .navigationBarBackButtonHidden()
@@ -51,6 +61,8 @@ struct CreateAccountView: View {
                         }
                         
                     }
+                    .disabled(!formIsValid)
+                    .opacity(formIsValid ? 1.0 : 0.5)
                     
                 }.padding(.vertical, 80)
             }
@@ -59,6 +71,24 @@ struct CreateAccountView: View {
         Spacer()
     }
 }
+
+extension CreateAccountView: AuthenticationFormProtocol {
+    static func isValidEmail(_ email: String) -> Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+        let emailTest = NSPredicate(format: "SELF MATCHES %@", emailRegex)
+        return emailTest.evaluate(with: email)
+    }
+    
+    var formIsValid: Bool {
+        return Self.isValidEmail(userVm.email)
+        && !userVm.fullName.isEmpty
+        && !userVm.password.isEmpty
+        && !userVm.confirmPassword.isEmpty
+        && userVm.password.count > 5
+        && userVm.password == userVm.confirmPassword
+    }
+}
+
 
 struct CreateAccountView_Previews: PreviewProvider {
     static var previews: some View {

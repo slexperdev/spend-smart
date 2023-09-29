@@ -9,12 +9,18 @@ import Foundation
 import Firebase
 import FirebaseFirestoreSwift
 
+protocol AuthenticationFormProtocol {
+    var formIsValid: Bool { get }
+}
+
 class UserViewModel: ObservableObject {
     
     @Published var userSession : FirebaseAuth.User?
     @Published var currentUser: User?
     @Published var isAuthenticated: Bool = false
     @Published var isAuthenticating: Bool = false
+    @Published var showAlert: Bool = false
+    @Published var message: String = ""
     
     @Published var fullName: String = ""
     @Published var email: String = ""
@@ -44,9 +50,13 @@ class UserViewModel: ObservableObject {
                 self.userSession = result.user
                 self.isAuthenticated = true
             }
-            UserDefaults.standard.set(self.isAuthenticated, forKey: "autheticated")
+            
+            UserDefaults.standard.set(true, forKey: "authenticated")
+            await fetchUser()
         } catch{
             print("Failed to login with error \(error.localizedDescription)")
+            self.showAlert = true
+            self.message = "Invalid Credentials"
         }
         
         DispatchQueue.main.async {
@@ -71,7 +81,7 @@ class UserViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.isAuthenticated = true
             }
-            UserDefaults.standard.set(self.isAuthenticated, forKey: "autheticated")
+            UserDefaults.standard.set(self.isAuthenticated, forKey: "authenticated")
             
         } catch {
             print("Failed to create new user with error \(error.localizedDescription)")
@@ -86,7 +96,6 @@ class UserViewModel: ObservableObject {
         do {
             try Auth.auth().signOut()
             self.userSession = nil
-            self.currentUser = nil
             self.isAuthenticated = false
             UserDefaults.standard.removeObject(forKey: "authenticated")
         } catch {

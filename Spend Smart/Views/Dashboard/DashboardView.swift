@@ -12,26 +12,34 @@ struct DashboardView: View {
         TabView{
             HomeView()
                 .tabItem{
-                    Image(systemName: "house")
+                    Image(systemName: "house.fill")
                     Text("Home")
                 }
             CategoriesView()
                 .tabItem{
-                    Image(systemName: "bag")
+                    Image(systemName: "folder.fill")
                     Text("Categories")
+                }
+            ReportView()
+                .tabItem{
+                    Image(systemName: "chart.pie.fill")
+                    Text("Reports")
                 }
             SettingsView()
                 .tabItem{
-                    Image(systemName: "slider.horizontal.3")
+                    Image(systemName: "gear")
                     Text("Settings")
                 }
+
         }
-        .accentColor(Color("green"))
+        .accentColor(Color("GradientStart2"))
     }
 }
 
+#if DEBUG
 struct DashboardView_Previews: PreviewProvider {
     static var previews: some View {
         DashboardView()
     }
 }
+#endif

@@ -10,21 +10,21 @@ import SwiftUI
 struct SetCurrencyView: View {
     @EnvironmentObject var userVm : UserViewModel
     @StateObject var currencyVm: CurrencyViewModel = CurrencyViewModel()
-
+    
     @Environment(\.presentationMode) var present
-
+    
     
     var body: some View {
         ZStack{
             Color.white.ignoresSafeArea()
             VStack(alignment:.leading){
-               
+                
                 Button(action: {present.wrappedValue.dismiss()}){
-                        Image(systemName: "arrow.left")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                    }
-              
+                    Image(systemName: "arrow.left")
+                        .font(.title2)
+                        .foregroundColor(.black)
+                }
+                
                 Text("Set currency").font(.system(size: 36)).bold()
                     .padding(.top, 20)
                 VStack{
@@ -94,7 +94,7 @@ struct SetCurrencyView: View {
                 DashboardView()
                     .navigationBarBackButtonHidden()
             } label: {
-
+                
             }
         }.padding()
     }
