@@ -8,19 +8,39 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var userVm: UserViewModel
+    @State private var showSplash = true
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        ZStack {
+            if showSplash {
+                SplashView()
+                    .transition(.opacity)
+                    .animation(.easeOut(duration: 1.5))
+            } else {
+                //Check the user logged or not
+                if let isAuthenticated = UserDefaults.standard.value(forKey: "authenticated") as? Bool, isAuthenticated {
+                    DashboardView()
+                } else {
+                    StartUpView()
+                }
+            }
         }
-        .padding()
+        .onAppear{
+            DispatchQueue.main
+                .asyncAfter(deadline: .now() + 3)
+            {
+                withAnimation{
+                    self.showSplash = false
+                }
+            }
+        }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .environmentObject(UserViewModel())
     }
 }
