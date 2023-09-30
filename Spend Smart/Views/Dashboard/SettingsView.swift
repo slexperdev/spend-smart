@@ -11,6 +11,7 @@ struct SettingsView: View {
     @EnvironmentObject var userVm : UserViewModel
     @State private var isLogoutActive = false
     @State private var isShowDeleteModal = false
+    @State private var isShowLogoutModal = false
     
     var body: some View {
         ZStack{
@@ -67,6 +68,25 @@ struct SettingsView: View {
                         .padding(.horizontal)
                     }
                     
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 13)
+                            .foregroundColor(Color("gray1"))
+                            .frame(height: 60)
+                        HStack{
+                            Image(systemName: "envelope")
+                                .font(.system(size: 25))
+                            Text("Email")
+                                .font(.system(size: 20))
+                                .fontWeight(.medium)
+                            Spacer()
+                            Text(userVm.currentUser?.email ?? "")
+                                .font(.system(size: 20))
+                                .fontWeight(.medium)
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    
                 }.padding(.top)
                 Spacer(minLength: 0)
                 VStack(alignment: .leading, spacing:20){
@@ -75,26 +95,69 @@ struct SettingsView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(Color("red"))
                         .padding(.leading)
-                    ZStack{
-                        RoundedRectangle(cornerRadius: 13)
-                            .foregroundColor(Color("orange"))
-                            .frame(height: 60)
-                        HStack{
-                            Image(systemName: "arrow.left")
-                                .font(.system(size: 20))
-                                .foregroundColor(.white)
-                            Text("Logout")
-                                .font(.system(size: 20))
-                                .fontWeight(.medium)
-                                .foregroundColor(.white)
-                            Spacer()
+                    Button{
+                        isShowLogoutModal.toggle()
+                    } label: {
+                        ZStack{
+                            RoundedRectangle(cornerRadius: 13)
+                                .foregroundColor(Color("orange"))
+                                .frame(height: 60)
+                            HStack{
+                                Image(systemName: "arrow.left")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.white)
+                                Text("Logout")
+                                    .font(.system(size: 20))
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.white)
+                                Spacer()
+                            }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
-                    }.onTapGesture {
-                        
-                        userVm.signOut()
-                        isLogoutActive = true
-                        
+                    }.sheet(isPresented: $isShowLogoutModal) {
+                        VStack(spacing: 10){
+                            HStack{
+                                Text("Do you want logout ?")
+                                    .font(.system(size: 20))
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Color("red"))
+                                Spacer(minLength: 0)
+                            }
+                            HStack{
+                                Text("Note! This acction will logout current user.")
+                                    .font(.system(size: 18))
+                                    .fontWeight(.regular)
+                                    .foregroundColor(Color("gray"))
+                                Spacer(minLength: 0)
+                            }
+                            
+                            HStack{
+                                
+                                Spacer()
+                                
+                                Button{
+                                    isShowLogoutModal = false
+                                    userVm.signOut()
+                                    isLogoutActive = true
+                                } label: {
+                                    ZStack{
+                                        RoundedRectangle(cornerRadius:50)
+                                            .foregroundColor(Color("orange"))
+                                            .frame(width:100, height: 50)
+                                        HStack{
+                                       
+                                            Text("Yes")
+                                                .font(.system(size: 20))
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.white)
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            Spacer(minLength: 0)
+                        }.padding()
+                            .presentationDetents([.fraction(0.2)])
                     }
                     Button {
                         isShowDeleteModal.toggle()
